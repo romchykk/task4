@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/romchykk/task4.git', branch: 'main'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                bat '"My_MSBuild" test_repos.sln /p:Configuration=Debug /p:Platform=x64'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                // Запускаємо тести і створюємо звіт
+                bat "x64\\Debug\\test_repos.exe --gtest_output=xml:test_report.xml"
+            }
+        }
+    }
+    
+    post {
+        always {
+            xunit (
+                tools: [GoogleTest(pattern: 'test_report.xml')],
+                thresholds: [FailedThreshold(total: '0'), SkippedThreshold(total: '0')]
+            )
+            cleanWs()
+        }
+    }
+}
