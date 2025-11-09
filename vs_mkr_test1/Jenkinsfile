@@ -10,24 +10,24 @@ pipeline {
         
         stage('Build') {
             steps {
-                bat '"My_MSBuild" test_repos.sln /p:Configuration=Debug /p:Platform=x64'
+
+                bat '"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe" vs_mkr_test1\\test_repos.sln /t:Build /p:Configuration=Debug /p:Platform=x64'
             }
         }
         
         stage('Test') {
             steps {
-                // Запускаємо тести і створюємо звіт
-                bat "x64\\Debug\\test_repos.exe --gtest_output=xml:test_report.xml"
+
+                bat "vs_mkr_test1\\x64\\Debug\\test_repos.exe --gtest_output=xml:test_report.xml"
             }
         }
     }
     
     post {
         always {
-            xunit (
-                tools: [GoogleTest(pattern: 'test_report.xml')],
-                thresholds: [FailedThreshold(total: '0'), SkippedThreshold(total: '0')]
-            )
+
+            junit(testResults: 'vs_mkr_test1/test_report.xml', skipOldReports: true, healthScaleFactor: 1.0)
+
             cleanWs()
         }
     }
